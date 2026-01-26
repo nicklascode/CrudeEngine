@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35521.163 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrudeEngine", "CrudeEngine\CrudeEngine.csproj", "{24AB3E84-8265-42D6-B350-36675F35B270}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandbox", "Sandbox\Sandbox.csproj", "{04C4679B-9682-404A-A2D5-D21A3474553A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{24AB3E84-8265-42D6-B350-36675F35B270}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24AB3E84-8265-42D6-B350-36675F35B270}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24AB3E84-8265-42D6-B350-36675F35B270}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24AB3E84-8265-42D6-B350-36675F35B270}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04C4679B-9682-404A-A2D5-D21A3474553A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04C4679B-9682-404A-A2D5-D21A3474553A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04C4679B-9682-404A-A2D5-D21A3474553A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04C4679B-9682-404A-A2D5-D21A3474553A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
