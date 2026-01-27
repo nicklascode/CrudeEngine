@@ -4,6 +4,7 @@ using CrudeEngine.Graphics;
 using CrudeEngine.Graphics.Mesh;
 using CrudeEngine.Graphics.Renderer;
 using CrudeEngine.Graphics.Renderer.RenderProperties;
+using CrudeEngine.IO;
 using CrudeEngine.SceneSystem;
 using CrudeEngine.Utils;
 using OpenGL;
@@ -26,19 +27,19 @@ namespace Sandbox
 {
     public class SandboxGame : CrudeEngine.Game
     {
-        public SandboxGame() : base(new WindowProps("Sandbox Game", 1280, 720))
+        public SandboxGame() : base(new WindowProps("Sandbox Game", 1280, 720), new GameConfig("Sandbox", "1.0.0"))
         {
             AssetLoader.SetRootPath(Path.Combine(AppContext.BaseDirectory, "Assets"));
             _currentScene = new SandboxScene();
         }
 
-        protected override void Start()
+        public override void Start()
         {
             base.Start();
             Console.WriteLine("Sandbox Game Started");
         }
 
-        protected override void Update(float deltaTime)
+        public override void Update(float deltaTime)
         {
             base.Update(deltaTime);
 

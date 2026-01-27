@@ -18,7 +18,7 @@ namespace Sandbox.Entities.Water
         private int width;
         private int height;
 
-        private float density = 16f; // Density of the water mesh
+        private float density = 1f; // Density of the water mesh
 
         public WaterComponent(int width, int height)
         {

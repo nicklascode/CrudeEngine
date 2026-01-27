@@ -1,23 +1,23 @@
-﻿using CrudeEngine;
-using CrudeEngine.ECS;
+﻿using CrudeEngine.ECS;
 using CrudeEngine.Graphics;
 using CrudeEngine.Graphics.Light;
 using CrudeEngine.Graphics.Renderer;
+using CrudeEngine.IO;
 using CrudeEngine.SceneSystem;
 using CrudeEngine.Utils;
 using OpenGL;
 using System;
 using System.Numerics;
 
-namespace Sandbox.Shaders
+namespace CrudeEngine.Base.Shaders
 {
     public class DefaultShader : Shader
     {
         public DefaultShader() : base()
         {
             // Load the shader source code from files
-            string vertexShaderSource = AssetLoader.LoadShader("Shaders/DefaultVertexShader.glsl");
-            string fragmentShaderSource = AssetLoader.LoadShader("Shaders/DefaultFragmentShader.glsl");
+            string vertexShaderSource = AssetLoader.LoadShader("Base/Shaders/DefaultVertexShader.glsl");
+            string fragmentShaderSource = AssetLoader.LoadShader("Base/Shaders/DefaultFragmentShader.glsl");
 
             // Add shaders to program
             AddVertexShader(vertexShaderSource);
@@ -93,7 +93,7 @@ namespace Sandbox.Shaders
                 List<Light>? lights = scene.GetLights() as List<Light>;
                 if (lights != null)
                 {
-                    int count = Math.Min(lights.Count, MAX_LIGHTS);
+                    int count = System.Math.Min(lights.Count, MAX_LIGHTS);
                     SetUniform("lightCount", count);
                     for (int i = 0; i < count; i++)
                     {
@@ -101,10 +101,6 @@ namespace Sandbox.Shaders
                         SetUniform($"uLights[{i}].position", light.Transform.Position);
                         SetUniform($"uLights[{i}].color", light.Color);
                     }
-                }
-                else
-                {
-                    Console.WriteLine($"No lights found in scene");
                 }
             }
         }

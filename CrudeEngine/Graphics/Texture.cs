@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using StbImageSharp;
 using OpenGL;
-using CrudeEngine.Utils;
+using CrudeEngine.IO;
 
 namespace CrudeEngine.Graphics
 {

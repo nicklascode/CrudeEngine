@@ -1,4 +1,5 @@
 ﻿using CrudeEngine.Graphics.Renderer;
+using CrudeEngine.IO;
 using CrudeEngine.Math;
 using System;
 using System.Collections.Generic;
@@ -8,15 +9,20 @@ using System.Threading.Tasks;
 
 namespace CrudeEngine.ECS
 {
-    public class Entity
+    public class Entity : Saveable
     {
         protected Transform transform;
         protected Dictionary<string, Component> components;
+        public Guid Id { get; set; }
 
         public Entity()
         {
+            Id = Guid.NewGuid();
             transform = new Transform();
             components = new Dictionary<string, Component>();
+
+            // Base save config
+            SetSaveConfig(SaveType.EntityData, Id.ToString());
         }
 
         public Transform Transform

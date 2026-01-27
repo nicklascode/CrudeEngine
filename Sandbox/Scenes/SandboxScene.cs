@@ -19,6 +19,7 @@ using CrudeEngine.Utils;
 using CrudeEngine.PhysicsEngine;
 using CrudeEngine.Graphics.Mesh;
 using CrudeEngine;
+using CrudeEngine.Base.Shaders;
 
 namespace Sandbox.Scenes
 {

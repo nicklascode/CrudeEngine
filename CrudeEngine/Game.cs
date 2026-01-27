@@ -29,55 +29,75 @@ namespace CrudeEngine
 
         public Game()
         {
+            Instance = this;
             Config = new GameConfig { GameName = "Crude Engine", GameVersion = "1.0" };
             var props = new WindowProps("Crude Engine", 800, 600);
             _window = new Window(props);
-            Input.Initialize(_window.Handle);
-            _input = Input.Instance;
+            // Don't initialize Input here - defer until after window is created
         }
 
         public Game(WindowProps props, GameConfig config)
         {
+            Instance = this;
             Config = config;
             _window = new Window(props);
-            Input.Initialize(_window.Handle);
-            _input = Input.Instance;
+            // Don't initialize Input here - defer until after window is created
+        }
+
+        protected void InitializeInput()
+        {
+            if (_window.Handle != IntPtr.Zero)
+            {
+                Input.Initialize(_window.Handle);
+                _input = Input.Instance;
+            }
         }
 
         public void SetScene(Scene scene)
         {
             _currentScene = scene;
-            Run();
         }
 
         private void Initialize()
         {
-            if(_isRunning)
+            if (_isRunning)
             {
                 Console.WriteLine("Game is already running.");
                 return;
             }
 
-            if (!_window.Initialize())
+            if (!_window.IsExternal)
             {
-                Console.WriteLine("Failed to initialize the window.");
-                return;
-            }
-
-            // Only call is running if the window opengl context is created successfully
-            if (_window.IsOpenGLInitialized)
-            {
-                _isRunning = true;
-                Console.WriteLine("Window initialized successfully.");
+                if (!_window.Initialize())
+                {
+                    Console.WriteLine("Failed to initialize the window.");
+                    return;
+                }
             }
             else
             {
-                Console.WriteLine("Failed to create OpenGL context.");
-                _isRunning = false;
+                _window.InitializeHeadless();
+            }
+
+            // Initialize Input after the window is created
+            InitializeInput();
+
+            if (!_window.IsExternal)
+            {
+                if (_window.IsOpenGLInitialized)
+                {
+                    _isRunning = true;
+                    Console.WriteLine("Window initialized successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to create OpenGL context.");
+                    _isRunning = false;
+                }
             }
         }
 
-        protected virtual void Start()
+        public virtual void Start()
         {
             if (_currentScene != null)
             {
@@ -89,7 +109,7 @@ namespace CrudeEngine
             }
         }
 
-        protected virtual void Update(float deltaTime) {
+        public virtual void Update(float deltaTime) {
             if (_currentScene != null)
             {
                 _currentScene.Update(deltaTime);
@@ -98,10 +118,10 @@ namespace CrudeEngine
             {
                 Console.WriteLine("No scene set to update.");
             }
-            _input.Update();
+            _input?.Update();
         }
 
-        protected virtual void Render()
+        public virtual void Render()
         {
             if (_currentScene != null)
             {
@@ -117,9 +137,12 @@ namespace CrudeEngine
         {
             Initialize();
             if (!_isRunning) return;
-            // Indicate loading of game resources
-            _window.Clear(1f, 0f, 0f, 1f); // Clear with red color
-            _window.Present(); // Present the cleared window
+
+            if (!_window.IsExternal)
+            {
+                _window.Clear(1f, 0f, 0f, 1f);
+                _window.Present();
+            }
 
             Start();
 
@@ -128,15 +151,24 @@ namespace CrudeEngine
 
             while (_isRunning)
             {
-                _isRunning = _window.PollEvents();
+                if (!_window.IsExternal)
+                    _isRunning = _window.PollEvents();
+                else
+                    _isRunning = true;
 
                 float deltaTime = (float)timer.Elapsed.TotalSeconds;
                 timer.Restart();
 
                 Update(deltaTime);
-                _window.Clear();   // Default black background
+                _window.UpdateHooks(deltaTime);
+                
+                if (!_window.IsExternal)
+                    _window.Clear();
                 Render();
-                _window.Present();
+                _window.RenderHooks();
+                
+                if (!_window.IsExternal)
+                    _window.Present();
             }
 
             Destroy();

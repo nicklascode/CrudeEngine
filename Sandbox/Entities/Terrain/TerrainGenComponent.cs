@@ -1,4 +1,5 @@
 ﻿using CrudeEngine;
+using CrudeEngine.Base.Shaders;
 using CrudeEngine.ECS;
 using CrudeEngine.Graphics;
 using CrudeEngine.Graphics.Mesh;
