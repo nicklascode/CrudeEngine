@@ -174,6 +174,12 @@ namespace CrudeEngine
             Destroy();
         }
 
+        public void Stop()
+        {
+            _isRunning = false;
+            Environment.Exit(1);
+        }
+
         public void Destroy()
         {
             _window?.Destroy();
