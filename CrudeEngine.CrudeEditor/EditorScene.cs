@@ -39,7 +39,7 @@ namespace Sandbox.Scenes
 
 
             // Initialize entities
-            AddEntity(cubeEntity);
+            //AddEntity(cubeEntity);
         }
 
         public override void Update(float deltaTime)

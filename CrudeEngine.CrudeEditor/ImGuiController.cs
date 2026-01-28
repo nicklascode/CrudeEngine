@@ -16,6 +16,7 @@ namespace CrudeEngine.CrudeEditor
         {
             windows.Add(new ProjectWindow());
             windows.Add(new SceneWindow());
+            windows.Add(new EntityEditorWindow());
         }
 
         protected override Task PostInitialized()
