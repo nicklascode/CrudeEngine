@@ -1,6 +1,7 @@
-﻿using System;
+﻿using OpenGL;
 using SDL2;
-using OpenGL;
+using System;
+using static SDL2.SDL;
 
 namespace CrudeEngine.Graphics
 {
@@ -11,12 +12,15 @@ namespace CrudeEngine.Graphics
         public int Height;
         public bool IsExternal;
 
-        public WindowProps(string title, int width, int height, bool isExternal = false)
+        public SDL.SDL_WindowFlags Flags;
+
+        public WindowProps(string title, int width, int height, SDL.SDL_WindowFlags flags = SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE, bool isExternal = false)
         {
             Title = title;
             Width = width;
             Height = height;
             IsExternal = isExternal;
+            Flags = flags;
         }
     }
 
@@ -27,8 +31,8 @@ namespace CrudeEngine.Graphics
         private WindowProps _props;
         private bool _isExternal;
 
-        public int Width { get; }
-        public int Height { get; }
+        public int Width { get; protected set; }
+        public int Height { get; protected set; }
         public string Title { get; }
 
         public bool IsOpenGLInitialized => _glContext != IntPtr.Zero;
@@ -63,7 +67,7 @@ namespace CrudeEngine.Graphics
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 3);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_MINOR_VERSION, 3);
             SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_PROFILE_MASK, SDL.SDL_GLprofile.SDL_GL_CONTEXT_PROFILE_CORE);
-            _window = SDL.SDL_CreateWindow(Title, SDL.SDL_WINDOWPOS_UNDEFINED, SDL.SDL_WINDOWPOS_UNDEFINED, Width, Height, SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN);
+            _window = SDL.SDL_CreateWindow(Title, SDL.SDL_WINDOWPOS_UNDEFINED, SDL.SDL_WINDOWPOS_UNDEFINED, Width, Height, _props.Flags | SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL);
             if (_window == IntPtr.Zero)
             {
                 Console.WriteLine($"Window could not be created! SDL_Error: {SDL.SDL_GetError()}");
@@ -106,7 +110,17 @@ namespace CrudeEngine.Graphics
                 {
                     // Forward event to subscribers (e.g., ImGui)
                     OnEvent?.Invoke(e);
-                    
+                    if (e.type == SDL.SDL_EventType.SDL_WINDOWEVENT)
+                    {
+                        if (e.window.windowEvent == SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED)
+                        {
+                            Width = e.window.data1;
+                            Height = e.window.data2;
+
+                            Gl.Viewport(0, 0, Width, Height);
+                        }
+                    }
+
                     if (e.type == SDL.SDL_EventType.SDL_QUIT)
                         return false;
                 }

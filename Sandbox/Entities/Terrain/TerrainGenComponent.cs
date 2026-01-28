@@ -31,6 +31,14 @@ namespace Sandbox.Entities.Terrain
         private Texture terrainTexture;
         private int seed = 42;
 
+        public TerrainGenComponent()
+        {
+            this.width = 128;
+            this.height = 128;
+            this.noiseScale = 8f;
+            this.resolution = 1;
+        }
+
         public TerrainGenComponent(int width, int height, float noiseScale = 8f, int resolution = 1)
         {
             this.width = width;

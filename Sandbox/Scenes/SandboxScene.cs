@@ -47,7 +47,7 @@ namespace Sandbox.Scenes
             Renderer renderer = new Renderer();
             renderer.SetRenderInfo(new RenderInfo(new DefaultRenderProperties(), new DefaultShader()));
             MeshVBO meshVBO = new MeshVBO();
-            meshVBO.Allocate(OBJLoader.Load("Objs/Bob.obj")); // Load a simple sphere mesh
+            meshVBO.Allocate(OBJLoader.Load("Base/Objs/Cube.obj")); // Load a simple sphere mesh
             renderer.SetMeshVBO(meshVBO);
             bobEntity.AddComponent("Material", new MaterialComponent(baseMaterial));
             bobEntity.AddComponent("Renderer", renderer);
@@ -80,7 +80,7 @@ namespace Sandbox.Scenes
             Renderer rendererAABB = new Renderer();
             rendererAABB.SetRenderInfo(new RenderInfo(new DefaultRenderProperties(), new DefaultShader()));
             MeshVBO meshAABB_VBO = new MeshVBO();
-            meshAABB_VBO.Allocate(OBJLoader.Load("Objs/Cube.obj")); // Load a simple sphere mesh
+            meshAABB_VBO.Allocate(OBJLoader.Load("Base/Objs/Cube.obj")); // Load a simple sphere mesh
             rendererAABB.SetMeshVBO(meshAABB_VBO);
             aabbEntity.AddComponent("Material", new MaterialComponent(baseMaterial));
             aabbEntity.AddComponent("Renderer", rendererAABB);

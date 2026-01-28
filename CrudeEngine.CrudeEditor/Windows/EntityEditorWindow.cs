@@ -20,13 +20,9 @@ namespace CrudeEngine.CrudeEditor.Windows
         }
 
         private EditorState _currentState = EditorState.SelectAction;
-        private List<Type> _entityTypes = [];
-        private int _selectedTypeIndex = -1;
         private string _entityName = "NewEntity";
         private Entity? _currentEntity;
 
-        // Component creation
-        private List<Type> _componentTypes = [];
         private int _selectedComponentIndex = -1;
         private string _componentName = "";
 
@@ -37,78 +33,12 @@ namespace CrudeEngine.CrudeEditor.Windows
         public EntityEditorWindow() : base("Entity Editor")
         {
             DefaultSize = new Vector2(500, 600);
-            RefreshEntityTypes();
             RefreshComponentTypes();
-        }
-
-        private void RefreshEntityTypes()
-        {
-            _entityTypes.Clear();
-            
-            // Get all loaded assemblies and find types that inherit from Entity
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                try
-                {
-                    var entityTypes = assembly.GetTypes()
-                        .Where(t => typeof(Entity).IsAssignableFrom(t) && !t.IsAbstract && t != typeof(Entity));
-                    _entityTypes.AddRange(entityTypes);
-                }
-                catch (ReflectionTypeLoadException)
-                {
-                    // Skip assemblies that can't be loaded
-                }
-            }
-
-            // Also try to load from project assembly if available
-            LoadProjectEntityTypes();
-        }
-
-        private void LoadProjectEntityTypes()
-        {
-            var project = Project.Project.Current;
-            if (project == null) return;
-
-            var dllPath = Path.Combine(project.ProjectPath, "bin", "Debug", "net10.0", $"{project.Name}.dll");
-            if (!File.Exists(dllPath)) return;
-
-            try
-            {
-                var assembly = Assembly.LoadFile(dllPath);
-                var entityTypes = assembly.GetTypes()
-                    .Where(t => typeof(Entity).IsAssignableFrom(t) && !t.IsAbstract);
-
-                foreach (var type in entityTypes)
-                {
-                    if (!_entityTypes.Any(t => t.FullName == type.FullName))
-                    {
-                        _entityTypes.Add(type);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to load project assembly: {ex.Message}");
-            }
         }
 
         private void RefreshComponentTypes()
         {
-            _componentTypes.Clear();
-
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                try
-                {
-                    var componentTypes = assembly.GetTypes()
-                        .Where(t => typeof(Component).IsAssignableFrom(t) && !t.IsAbstract && t != typeof(Component));
-                    _componentTypes.AddRange(componentTypes);
-                }
-                catch (ReflectionTypeLoadException)
-                {
-                    // Skip assemblies that can't be loaded
-                }
-            }
+            
         }
 
         protected override void OnRender()
@@ -144,7 +74,6 @@ namespace CrudeEngine.CrudeEditor.Windows
 
             if (ImGui.Button("Create New Entity", new Vector2(200, 40)))
             {
-                RefreshEntityTypes();
                 _currentState = EditorState.CreateEntity;
             }
 
@@ -163,11 +92,9 @@ namespace CrudeEngine.CrudeEditor.Windows
 
             if (ImGui.Button("Refresh Types"))
             {
-                RefreshEntityTypes();
                 RefreshComponentTypes();
             }
             ImGui.SameLine();
-            ImGui.Text($"Found {_entityTypes.Count} entity types, {_componentTypes.Count} component types");
         }
 
         private void RenderCreateEntity()
@@ -175,29 +102,11 @@ namespace CrudeEngine.CrudeEditor.Windows
             if (ImGui.Button("<- Back"))
             {
                 _currentState = EditorState.SelectAction;
-                _selectedTypeIndex = -1;
                 return;
             }
 
             ImGui.Separator();
             ImGui.TextColored(new Vector4(0.4f, 0.8f, 1.0f, 1.0f), "Create New Entity");
-            ImGui.Spacing();
-
-            // Entity type selection
-            ImGui.Text("Select Entity Type:");
-            if (ImGui.BeginListBox("##EntityTypes", new Vector2(-1, 150)))
-            {
-                for (int i = 0; i < _entityTypes.Count; i++)
-                {
-                    bool isSelected = _selectedTypeIndex == i;
-                    if (ImGui.Selectable(_entityTypes[i].FullName ?? _entityTypes[i].Name, isSelected))
-                    {
-                        _selectedTypeIndex = i;
-                    }
-                }
-                ImGui.EndListBox();
-            }
-
             ImGui.Spacing();
 
             // Entity name input
@@ -207,7 +116,7 @@ namespace CrudeEngine.CrudeEditor.Windows
             ImGui.Spacing();
 
             // Create button
-            bool canCreate = _selectedTypeIndex >= 0 && !string.IsNullOrWhiteSpace(_entityName);
+            bool canCreate = !string.IsNullOrWhiteSpace(_entityName);
             if (!canCreate)
             {
                 ImGui.BeginDisabled();
@@ -222,30 +131,13 @@ namespace CrudeEngine.CrudeEditor.Windows
             {
                 ImGui.EndDisabled();
             }
-
-            if (_selectedTypeIndex < 0)
-            {
-                ImGui.TextColored(new Vector4(1.0f, 0.6f, 0.4f, 1.0f), "Please select an entity type");
-            }
         }
 
         private void CreateEntity()
         {
-            try
-            {
-                var entityType = _entityTypes[_selectedTypeIndex];
-                _currentEntity = Activator.CreateInstance(entityType) as Entity;
-
-                if (_currentEntity != null)
-                {
-                    Console.WriteLine($"Created entity of type {entityType.Name}");
-                    _currentState = EditorState.EditEntity;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to create entity: {ex.Message}");
-            }
+            Entity e = new Entity();
+            Game.Instance.GetCurrentScene().AddEntity(e);
+            _currentEntity = e;
         }
 
         private void RenderEditEntity()
@@ -292,7 +184,7 @@ namespace CrudeEngine.CrudeEditor.Windows
             }
 
             // Add component section
-            if (ImGui.CollapsingHeader("Add Component"))
+            if (ImGui.CollapsingHeader("Add Components"))
             {
                 RenderAddComponent();
             }
@@ -330,19 +222,7 @@ namespace CrudeEngine.CrudeEditor.Windows
         {
             if (_currentEntity == null) return;
 
-            // Use reflection to get the components dictionary
-            var componentsField = typeof(Entity).GetField("components", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (componentsField?.GetValue(_currentEntity) is not Dictionary<string, Component> components)
-            {
-                ImGui.Text("Unable to access components");
-                return;
-            }
-
-            if (components.Count == 0)
-            {
-                ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1.0f), "No components attached");
-                return;
-            }
+            Dictionary<string, Component> components = new Dictionary<string, Component>();
 
             List<string> toRemove = [];
 
@@ -454,22 +334,6 @@ namespace CrudeEngine.CrudeEditor.Windows
             ImGui.InputText("##CompName", ref _componentName, 128);
 
             ImGui.Text("Select Component Type:");
-            if (ImGui.BeginListBox("##ComponentTypes", new Vector2(-1, 120)))
-            {
-                for (int i = 0; i < _componentTypes.Count; i++)
-                {
-                    bool isSelected = _selectedComponentIndex == i;
-                    if (ImGui.Selectable(_componentTypes[i].Name, isSelected))
-                    {
-                        _selectedComponentIndex = i;
-                        if (string.IsNullOrEmpty(_componentName))
-                        {
-                            _componentName = _componentTypes[i].Name;
-                        }
-                    }
-                }
-                ImGui.EndListBox();
-            }
 
             bool canAdd = _selectedComponentIndex >= 0 && !string.IsNullOrWhiteSpace(_componentName) && _currentEntity != null;
             if (!canAdd) ImGui.BeginDisabled();
@@ -478,14 +342,7 @@ namespace CrudeEngine.CrudeEditor.Windows
             {
                 try
                 {
-                    var componentType = _componentTypes[_selectedComponentIndex];
-                    var component = Activator.CreateInstance(componentType) as Component;
-                    if (component != null && _currentEntity != null)
-                    {
-                        _currentEntity.AddComponent(_componentName, component);
-                        _componentName = "";
-                        _selectedComponentIndex = -1;
-                    }
+                    // TODO Add component
                 }
                 catch (Exception ex)
                 {
