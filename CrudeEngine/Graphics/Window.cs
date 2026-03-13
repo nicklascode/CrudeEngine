@@ -1,6 +1,11 @@
 ﻿using OpenGL;
 using SDL2;
 using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using StbImageSharp;
+using CrudeEngine.IO;
+
 using static SDL2.SDL;
 
 namespace CrudeEngine.Graphics
@@ -41,7 +46,7 @@ namespace CrudeEngine.Graphics
         public IntPtr GLContext => _glContext;
         public bool IsExternal => _isExternal;
 
-        // Hook points for external UI systems (e.g., ImGui)
+        // Hook points
         public event Action? OnInitialized;
         public event Action<SDL.SDL_Event>? OnEvent;
         public event Action<float>? OnUpdate;
@@ -73,6 +78,17 @@ namespace CrudeEngine.Graphics
                 Console.WriteLine($"Window could not be created! SDL_Error: {SDL.SDL_GetError()}");
                 return false;
             }
+
+            // Try to set the default icon from Assets/CrudeEnigneLogo.png
+            try
+            {
+                SetWindowIcon();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to set window icon: {ex.Message}");
+            }
+
             OpenGL.Gl.Initialize();
             _glContext = SDL.SDL_GL_CreateContext(_window);
             if (_glContext == IntPtr.Zero)
@@ -99,6 +115,64 @@ namespace CrudeEngine.Graphics
             Gl.Viewport(0, 0, Width, Height);
             
             OnInitialized?.Invoke();
+        }
+
+        public bool SetWindowIcon(string? relativePath = null)
+        {
+            if (_window == IntPtr.Zero)
+                return false;
+
+            // Default to the base assets
+            string iconName = string.IsNullOrEmpty(relativePath) ? Path.Combine("Base", "CrudeEnigneLogo.png") : relativePath;
+            string fullPath = iconName;
+            if (!string.IsNullOrEmpty(AssetLoader.ROOT_PATH))
+                fullPath = Path.Combine(AssetLoader.ROOT_PATH, iconName);
+
+            if (!File.Exists(fullPath))
+            {
+                Console.WriteLine($"Icon file not found: {fullPath}");
+                return false;
+            }
+
+            // Load image using StbImageSharp
+            using (var fs = File.OpenRead(fullPath))
+            {
+                ImageResult image = ImageResult.FromStream(fs, ColorComponents.RedGreenBlueAlpha);
+
+                // Pin managed pixel array
+                GCHandle handle = GCHandle.Alloc(image.Data, GCHandleType.Pinned);
+                try
+                {
+                    IntPtr pixelPtr = handle.AddrOfPinnedObject();
+                    int width = image.Width;
+                    int height = image.Height;
+                    int depth = 32; // RGBA 8 bits each
+                    int pitch = width * 4;
+
+                    // Create an SDL surface from the pixel data
+                    IntPtr surface = SDL.SDL_CreateRGBSurfaceFrom(pixelPtr, width, height, depth, pitch,
+                        0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+
+                    if (surface == IntPtr.Zero)
+                    {
+                        Console.WriteLine($"SDL_CreateRGBSurfaceFrom failed: {SDL.SDL_GetError()}");
+                        return false;
+                    }
+
+                    // Set the window icon (SDL will make its own copy)
+                    SDL.SDL_SetWindowIcon(_window, surface);
+
+                    // Free the surface created by SDL
+                    SDL.SDL_FreeSurface(surface);
+
+                    return true;
+                }
+                finally
+                {
+                    if (handle.IsAllocated)
+                        handle.Free();
+                }
+            }
         }
 
         public bool PollEvents()
