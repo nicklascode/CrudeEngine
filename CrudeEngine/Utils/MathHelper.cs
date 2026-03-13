@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace CrudeEngine.Utils
 {
+    // I suck at math, so it's a good thing I have google :D
     public class MathHelper
     {
         public static float DegreesToRadians(float fieldOfView)

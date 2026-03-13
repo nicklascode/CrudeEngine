@@ -33,7 +33,6 @@ namespace CrudeEngine
             Config = new GameConfig { GameName = "Crude Engine", GameVersion = "1.0" };
             var props = new WindowProps("Crude Engine", 800, 600);
             _window = new Window(props);
-            // Don't initialize Input here - defer until after window is created
         }
 
         public Game(WindowProps props, GameConfig config)
@@ -41,7 +40,6 @@ namespace CrudeEngine
             Instance = this;
             Config = config;
             _window = new Window(props);
-            // Don't initialize Input here - defer until after window is created
         }
 
         protected void InitializeInput()
@@ -79,7 +77,6 @@ namespace CrudeEngine
                 _window.InitializeHeadless();
             }
 
-            // Initialize Input after the window is created
             InitializeInput();
 
             if (!_window.IsExternal)

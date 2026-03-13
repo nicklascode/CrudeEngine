@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 
 namespace CrudeEngine.Math
 {
-    using System;
-    using System.Linq;
-
     public class PerlinNoise
     {
         private readonly int[] permutation;

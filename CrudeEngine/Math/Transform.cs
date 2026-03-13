@@ -67,7 +67,7 @@ namespace CrudeEngine.Math
             return Vector3.Transform(Vector3.UnitY, rotation);
         }
 
-        public string ToString()
+        public override string ToString()
         {
             return $"Position: {position}, Rotation: {rotation}, Scale: {scale}";
         }

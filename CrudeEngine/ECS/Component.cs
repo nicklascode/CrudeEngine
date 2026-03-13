@@ -11,11 +11,9 @@ namespace CrudeEngine.ECS
         protected Entity entity = new Entity();
         public virtual void Start()
         {
-            // Initialization code
         }
         public virtual void Update(float deltaTime = 0)
         {
-            // Update logic
         }
 
         public Entity GetEntity()
